@@ -1,9 +1,3 @@
-"""
-ATRA decision dashboard (Streamlit).
-
-Run: streamlit run src/atra/dashboard/app.py
-Or from repo root with package installed: streamlit run -m atra.dashboard.app
-"""
 
 from __future__ import annotations
 
