@@ -12,16 +12,35 @@ import os
 from pathlib import Path
 
 import pandas as pd
+import requests
 import streamlit as st
 
-from atra.db import connect, get_latest_daily_insight, init_db, query_papers
+from atra.db import connect, get_latest_daily_insight, init_db, insert_run, query_papers, upsert_papers
 from atra.insights import generate_and_store_daily_insight
-from atra.tagging import list_sector_names
+from atra.summarize import summarize_missing
+from atra.sources.arxiv import ArxivIngestParams, fetch_arxiv
+from atra.tagging import list_sector_names, tag_missing_papers
 from atra.trends import early_signals, sector_trend_series, top_tokens
 
 
 def db_path() -> Path:
     return Path(os.environ.get("ATRA_DB_PATH", "data/atra.db"))
+
+
+def _bootstrap_from_arxiv(path: Path, *, category: str, days: int, limit: int) -> tuple[int, int]:
+    """Ingest → summarize → tag → briefing (small pull suitable for Streamlit Cloud)."""
+    rows, params_json = fetch_arxiv(ArxivIngestParams(category=category, days=days, limit=limit))
+    con = connect(path)
+    try:
+        insert_run(con, source="arxiv", params_json=params_json)
+        inserted, skipped = upsert_papers(con, rows)
+        con.commit()
+    finally:
+        con.close()
+    summarize_missing(path, batch_limit=min(500, limit * 20))
+    tag_missing_papers(path, batch_limit=min(500, limit * 20))
+    generate_and_store_daily_insight(path)
+    return inserted, skipped
 
 
 def _ensure_stored_briefing() -> None:
@@ -56,6 +75,24 @@ init_db(db_path())
 _ensure_stored_briefing()
 
 with st.sidebar:
+    st.subheader("Load data")
+    st.caption(
+        "Cloud deploys start with an empty database. Fetch a small **cs.AI** slice from arXiv, "
+        "then summarize, tag, and refresh the briefing (~30–90s)."
+    )
+    if st.button("Fetch sample papers from arXiv"):
+        path = db_path()
+        init_db(path)
+        try:
+            with st.spinner("Fetching from arXiv…"):
+                ins, sk = _bootstrap_from_arxiv(path, category="cs.AI", days=7, limit=25)
+            load_latest_briefing.clear()
+            st.success(f"Stored {ins} new papers ({sk} duplicates skipped). Refreshing…")
+        except (OSError, requests.RequestException) as exc:
+            st.error(f"Could not reach arXiv or save the database: {exc}")
+            st.stop()
+        st.rerun()
+    st.divider()
     st.subheader("Daily briefing")
     st.caption("Uses papers already in the database (does not fetch new articles).")
     if st.button("Regenerate briefing"):
@@ -133,7 +170,10 @@ with tab0:
 
 with tab1:
     if not papers:
-        st.info("No papers match. Run ingestion: `python -m atra daily`")
+        st.info(
+            "No papers in the database yet. Use **Fetch sample papers from arXiv** in the sidebar, "
+            "or run **`python -m atra daily`** where the SQLite file is stored."
+        )
     else:
         rows = []
         for p in papers:
