@@ -1,3 +1,9 @@
+"""
+ATRA decision dashboard (Streamlit).
+
+Run: streamlit run src/atra/dashboard/app.py
+Or from repo root with package installed: streamlit run -m atra.dashboard.app
+"""
 
 from __future__ import annotations
 
@@ -9,12 +15,25 @@ import pandas as pd
 import streamlit as st
 
 from atra.db import connect, get_latest_daily_insight, init_db, query_papers
+from atra.insights import generate_and_store_daily_insight
 from atra.tagging import list_sector_names
 from atra.trends import early_signals, sector_trend_series, top_tokens
 
 
 def db_path() -> Path:
     return Path(os.environ.get("ATRA_DB_PATH", "data/atra.db"))
+
+
+def _ensure_stored_briefing() -> None:
+    """Hosted apps never run `atra daily`; create a briefing row if the table is empty."""
+    path = db_path()
+    init_db(path)
+    con = connect(path)
+    try:
+        if get_latest_daily_insight(con) is None:
+            generate_and_store_daily_insight(path)
+    finally:
+        con.close()
 
 
 @st.cache_data(ttl=120)
@@ -34,8 +53,17 @@ st.caption(
 )
 
 init_db(db_path())
+_ensure_stored_briefing()
 
 with st.sidebar:
+    st.subheader("Daily briefing")
+    st.caption("Uses papers already in the database (does not fetch new articles).")
+    if st.button("Regenerate briefing"):
+        generate_and_store_daily_insight(db_path())
+        load_latest_briefing.clear()
+        st.success("Briefing updated.")
+        st.rerun()
+    st.divider()
     st.header("Filters")
     date_from = st.text_input("Date from (YYYY-MM-DD)", "")
     date_to = st.text_input("Date to (YYYY-MM-DD)", "")
@@ -69,8 +97,9 @@ with tab0:
     briefing = load_latest_briefing()
     if not briefing:
         st.warning(
-            "No briefing stored yet. Run **`python -m atra daily`** or **`python -m atra insights`** "
-            "on the machine that holds this database."
+            "No briefing could be loaded. Check that the database path is writable and try "
+            "**Regenerate briefing** in the sidebar, or run **`python -m atra daily`** / **`python -m atra insights`** "
+            "where the SQLite file lives."
         )
     else:
         st.subheader(f"Report date: {briefing.get('report_for_date', '—')}")
