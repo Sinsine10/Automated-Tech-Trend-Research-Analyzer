@@ -10,7 +10,7 @@ import requests
 
 from atra.db import PaperRow
 
-ARXIV_API = "http://export.arxiv.org/api/query"
+ARXIV_API = "https://export.arxiv.org/api/query"
 
 
 def _to_iso(dt_str: Optional[str]) -> Optional[str]:
