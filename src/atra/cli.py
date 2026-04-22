@@ -7,6 +7,7 @@ import typer
 from rich.console import Console
 from rich.table import Table
 
+from atra.daily_pipeline import ARXIV_DEFAULT_CATEGORIES, run_daily
 from atra.db import DEFAULT_DB_PATH, connect, init_db, insert_run, list_papers, upsert_papers
 from atra.sources.arxiv import ArxivIngestParams, fetch_arxiv
 from atra.sources.openalex import OpenAlexParams, fetch_openalex
@@ -17,8 +18,6 @@ from atra.trends import early_signals, sector_trend_series, top_tokens
 
 app = typer.Typer(add_completion=False, help="ATRA — Automated Tech-Trend & Research Analyzer")
 console = Console()
-
-ARXIV_DEFAULT_CATEGORIES = ["cs.AI", "cs.LG", "cs.CV", "q-bio.BM", "astro-ph.IM"]
 
 
 def _ingest_arxiv(
@@ -176,19 +175,20 @@ def daily_cmd(
     skip_insights: bool = typer.Option(False, "--skip-insights", help="Ingest only, no briefing"),
 ) -> None:
     """Automated daily job: full ingest → summarize → tag → intelligence briefing."""
-    init_db(db_path)
-    for cat in ARXIV_DEFAULT_CATEGORIES:
-        rid, n, ins, sk = _ingest_arxiv(db_path, category=cat, days=days, limit=arxiv_limit)
-        console.print(f"  arxiv {cat}: run {rid} +{ins} skip {sk}")
-    rid, n, ins, sk = _ingest_openalex(
-        db_path, days=days, limit=openalex_limit, search=openalex_search
+    result, payload = run_daily(
+        db_path,
+        days=days,
+        arxiv_limit=arxiv_limit,
+        openalex_limit=openalex_limit,
+        openalex_search=openalex_search,
+        skip_insights=skip_insights,
     )
-    console.print(f"  openalex: run {rid} +{ins} skip {sk}")
-    s = summarize_missing(db_path, batch_limit=5000)
-    t = tag_missing_papers(db_path, batch_limit=5000)
-    console.print(f"  summarized {s}, tagged {t}")
-    if not skip_insights:
-        payload = generate_and_store_daily_insight(db_path)
+    console.print(
+        f"  arxiv ({result.arxiv_categories} cats) + openalex ({result.openalex_rows} rows): "
+        f"+{result.inserted} inserted, {result.skipped} skipped"
+    )
+    console.print(f"  summarized {result.summarized}, tagged {result.tagged}")
+    if not skip_insights and payload:
         console.print("[green]OK[/green] daily intelligence briefing stored")
         for b in payload.get("narrative_bullets", []):
             console.print(f"  - {b}")
