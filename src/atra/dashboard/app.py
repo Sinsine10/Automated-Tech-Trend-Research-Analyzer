@@ -76,10 +76,6 @@ _ensure_stored_briefing()
 
 with st.sidebar:
     st.subheader("Load data")
-    st.caption(
-        "Cloud deploys start with an empty database. Fetch a small **cs.AI** slice from arXiv, "
-        "then summarize, tag, and refresh the briefing (~30–90s)."
-    )
     if st.button("Fetch sample papers from arXiv"):
         path = db_path()
         init_db(path)
@@ -93,8 +89,6 @@ with st.sidebar:
             st.stop()
         st.rerun()
     st.divider()
-    st.subheader("Daily briefing")
-    st.caption("Uses papers already in the database (does not fetch new articles).")
     if st.button("Regenerate briefing"):
         generate_and_store_daily_insight(db_path())
         load_latest_briefing.clear()
