@@ -9,12 +9,14 @@ from __future__ import annotations
 
 import json
 import os
+from datetime import timedelta
 from pathlib import Path
 
 import pandas as pd
 import requests
 import streamlit as st
 
+from atra.daily_pipeline import hours_since_last_insert, run_daily
 from atra.db import connect, get_latest_daily_insight, init_db, insert_run, query_papers, upsert_papers
 from atra.insights import generate_and_store_daily_insight
 from atra.summarize import summarize_missing
@@ -25,6 +27,35 @@ from atra.trends import early_signals, sector_trend_series, top_tokens
 
 def db_path() -> Path:
     return Path(os.environ.get("ATRA_DB_PATH", "data/atra.db"))
+
+
+def _env_int(name: str, default: int) -> int:
+    try:
+        return int(os.environ.get(name, str(default)))
+    except ValueError:
+        return default
+
+
+def _env_float(name: str, default: float) -> float:
+    try:
+        return float(os.environ.get(name, str(default)))
+    except ValueError:
+        return default
+
+
+def _auto_daily_ingest_enabled() -> bool:
+    return os.environ.get("ATRA_AUTO_DAILY_INGEST", "").strip().lower() in ("1", "true", "yes", "on")
+
+
+def _run_daily_with_env_limits(path: Path) -> None:
+    """Same job as `python -m atra daily` with limits from environment (tunable for Streamlit timeouts)."""
+    init_db(path)
+    run_daily(
+        path,
+        days=_env_int("ATRA_DAILY_DAYS", 1),
+        arxiv_limit=_env_int("ATRA_DAILY_ARXIV_LIMIT", 15),
+        openalex_limit=_env_int("ATRA_DAILY_OPENALEX_LIMIT", 30),
+    )
 
 
 def _bootstrap_from_arxiv(path: Path, *, category: str, days: int, limit: int) -> tuple[int, int]:
@@ -65,6 +96,25 @@ def load_latest_briefing() -> dict | None:
         con.close()
 
 
+@st.fragment(run_every=timedelta(hours=8))
+def _scheduled_daily_ingest() -> None:
+    """When ATRA_AUTO_DAILY_INGEST=1, periodically ingest if the last paper is old enough."""
+    if not _auto_daily_ingest_enabled():
+        return
+    path = db_path()
+    min_h = _env_float("ATRA_DAILY_MIN_INTERVAL_HOURS", 18.0)
+    h = hours_since_last_insert(path)
+    if h is not None and h < min_h:
+        return
+    try:
+        with st.spinner("Scheduled daily ingest — updating papers and trends…"):
+            _run_daily_with_env_limits(path)
+        load_latest_briefing.clear()
+        st.rerun()
+    except (OSError, requests.RequestException):
+        return
+
+
 st.set_page_config(page_title="ATRA — MInT", layout="wide")
 st.title("ATRA — Tech trend & research intelligence")
 st.caption(
@@ -76,6 +126,10 @@ _ensure_stored_briefing()
 
 with st.sidebar:
     st.subheader("Load data")
+    st.caption(
+        "Cloud deploys start with an empty database. Fetch a small **cs.AI** slice from arXiv, "
+        "then summarize, tag, and refresh the briefing (~30–90s)."
+    )
     if st.button("Fetch sample papers from arXiv"):
         path = db_path()
         init_db(path)
@@ -89,10 +143,33 @@ with st.sidebar:
             st.stop()
         st.rerun()
     st.divider()
+    st.subheader("Daily briefing")
+    st.caption("Uses papers already in the database (does not fetch new articles).")
     if st.button("Regenerate briefing"):
         generate_and_store_daily_insight(db_path())
         load_latest_briefing.clear()
         st.success("Briefing updated.")
+        st.rerun()
+    st.divider()
+    st.subheader("Daily trend updates")
+    st.caption(
+        "Trends use whatever is in the database. **Run full daily update** pulls all default arXiv "
+        "categories + OpenAlex, then re-tags and refreshes the briefing (several minutes). "
+        "For automatic runs while the app is open, set **ATRA_AUTO_DAILY_INGEST=1** in Streamlit "
+        "secrets and tune **ATRA_DAILY_MIN_INTERVAL_HOURS** (default 18), **ATRA_DAILY_ARXIV_LIMIT**, "
+        "**ATRA_DAILY_OPENALEX_LIMIT**."
+    )
+    if st.button("Run full daily update now"):
+        path = db_path()
+        init_db(path)
+        try:
+            with st.spinner("Running daily pipeline (ingest → summarize → tag → briefing)…"):
+                _run_daily_with_env_limits(path)
+            load_latest_briefing.clear()
+            st.success("Daily update finished. Refreshing…")
+        except (OSError, requests.RequestException) as exc:
+            st.error(f"Daily update failed (network or disk): {exc}")
+            st.stop()
         st.rerun()
     st.divider()
     st.header("Filters")
@@ -103,6 +180,8 @@ with st.sidebar:
     source = st.selectbox("Source", ["", "arxiv", "openalex"])
     search = st.text_input("Search (title / abstract / summary)", "")
     limit = st.slider("Max rows", 10, 300, 80)
+
+_scheduled_daily_ingest()
 
 con = connect(db_path())
 try:
@@ -193,6 +272,10 @@ with tab1:
         st.dataframe(df, width="stretch", hide_index=True)
 
 with tab2:
+    st.caption(
+        "Sector and keyword trends reflect **ingested papers**. Use **Run full daily update** or "
+        "scheduled ingest so this view gains new days of activity."
+    )
     series = sector_trend_series(db_path())
     if series:
         sdf = pd.DataFrame(series)
