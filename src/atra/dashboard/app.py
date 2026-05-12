@@ -154,11 +154,8 @@ with st.sidebar:
         st.rerun()
     st.divider()
     st.header("Filters")
-    date_from = st.text_input("Date from (YYYY-MM-DD)", "")
-    date_to = st.text_input("Date to (YYYY-MM-DD)", "")
     sector = st.selectbox("Sector", [""] + list_sector_names())
     impact = st.selectbox("Impact", ["", "low", "medium", "high"])
-    source = st.selectbox("Source", ["", "arxiv", "openalex"])
     search = st.text_input("Search (title / abstract / summary)", "")
     limit = st.slider("Max rows", 10, 300, 80)
 
