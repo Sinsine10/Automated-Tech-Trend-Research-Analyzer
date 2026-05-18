@@ -48,17 +48,17 @@ def run_daily(
     init_db(db_path)
     total_ins = 0
     total_sk = 0
-    for cat in cats:
-        rows, params_json = fetch_arxiv(ArxivIngestParams(category=cat, days=days, limit=arxiv_limit))
-        con = connect(db_path)
-        try:
-            insert_run(con, source="arxiv", params_json=params_json)
-            ins, sk = upsert_papers(con, rows)
-            con.commit()
-            total_ins += ins
-            total_sk += sk
-        finally:
-            con.close()
+    #for cat in cats:
+     #   rows, params_json = fetch_arxiv(ArxivIngestParams(category=cat, days=days, limit=arxiv_limit))
+      #  con = connect(db_path)
+       # try:
+        #    insert_run(con, source="arxiv", params_json=params_json)
+         #   ins, sk = upsert_papers(con, rows)
+          #  con.commit()
+           # total_ins += ins
+            #total_sk += sk
+        #finally:
+         #   con.close()
 
     oa_rows, oa_params = fetch_openalex(
         OpenAlexParams(days=days, limit=min(openalex_limit, 200), search=openalex_search)
