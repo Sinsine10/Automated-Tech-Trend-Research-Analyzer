@@ -10,7 +10,7 @@ import requests
 
 from atra.db import PaperRow
 
-ARXIV_API = "https://export.arxiv.org/api/query"
+ARXIV_API = "http://export.arxiv.org/api/query"
 
 
 def _to_iso(dt_str: Optional[str]) -> Optional[str]:
@@ -49,7 +49,7 @@ def fetch_arxiv(params: ArxivIngestParams) -> tuple[list[PaperRow], str]:
             "sortBy": "submittedDate",
             "sortOrder": "descending",
         },
-        timeout=30,
+        timeout=180,
         headers={"User-Agent": "ATRA-MInT/0.1 (research trend analyzer)"},
     )
     resp.raise_for_status()
