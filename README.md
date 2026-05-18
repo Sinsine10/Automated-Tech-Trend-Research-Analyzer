@@ -97,14 +97,6 @@ pip install -r requirements.txt
 python -m atra daily --days 1 --arxiv-limit 15 --openalex-limit 30
 ```
 
-This command:
-
-* Collects research papers
-* Processes NLP summaries
-* Stores results in SQLite
-* Generates trend intelligence
-
----
 
 ## Step 2 — Start FastAPI Backend
 
