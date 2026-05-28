@@ -142,13 +142,6 @@ Database stores:
 * Trend analytics
 * Pipeline execution logs
 
-Future upgrades may include:
-
-* PostgreSQL
-* MongoDB
-* Supabase
-* Vector databases (FAISS / Pinecone)
-
 ---
 
 # API Endpoints
