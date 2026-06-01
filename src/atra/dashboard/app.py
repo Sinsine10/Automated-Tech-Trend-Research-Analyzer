@@ -174,40 +174,35 @@ p, div, span, label {
 label {
     color: #000000 !important;
 }
-/* Text input boxes */
+/* Text input fields */
 .stTextInput input {
-    border: 2px solid #0B6E4F !important;
-    color: #0B6E4F !important;
+    background-color: #0B6E4F !important;
+    color: #000000 !important;
+    border: 1px solid #0B6E4F !important;
 }
 
-/* Select boxes */
+/* Selectbox */
 .stSelectbox div[data-baseweb="select"] {
-    border: 2px solid #0B6E4F !important;
+    background-color: #0B6E4F !important;
+    color: #000000 !important;
 }
 
-/* Number inputs and sliders */
+/* Dropdown selected value */
+.stSelectbox span {
+    color: #000000 !important;
+}
+
+/* Number inputs */
 .stNumberInput input {
-    border: 2px solid #0B6E4F !important;
-    color: #0B6E4F !important;
+    background-color: #0B6E4F !important;
+    color: #000000 !important;
 }
 
-/* Focused input */
-input:focus, textarea:focus {
-    border-color: #0B6E4F !important;
-    box-shadow: 0 0 0 1px #0B6E4F !important;
-}
-
-/* Sidebar labels */
-section[data-testid="stSidebar"] label {
-    color: #0B6E4F !important;
-    font-weight: 600;
-}
-
-/* Sidebar headers */
-section[data-testid="stSidebar"] h1,
-section[data-testid="stSidebar"] h2,
-section[data-testid="stSidebar"] h3 {
-    color: #0B6E4F !important;
+/* Slider */
+[data-testid="stSlider"] {
+    background-color: #0B6E4F;
+    padding: 8px;
+    border-radius: 8px;
 }
 </style>
 """, unsafe_allow_html=True)
