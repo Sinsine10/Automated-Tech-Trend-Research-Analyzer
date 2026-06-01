@@ -204,6 +204,38 @@ label {
     padding: 8px;
     border-radius: 8px;
 }
+
+/* CLOSED SELECT BOX */
+.stSelectbox div[data-baseweb="select"] {
+    background-color: #0B6E4F !important;
+    border: 2px solid #0B6E4F !important;
+    border-radius: 8px !important;
+}
+
+/* Selected text */
+.stSelectbox span {
+    color: black !important;
+    font-weight: 500;
+}
+
+/* OPENED DROPDOWN MENU */
+div[role="listbox"] {
+    background-color: white !important;
+    border: 2px solid #0B6E4F !important;
+    border-radius: 8px !important;
+}
+
+/* Dropdown options */
+div[role="option"] {
+    background-color: white !important;
+    color: black !important;
+}
+
+/* Hovered option */
+div[role="option"]:hover {
+    background-color: #EAF5F0 !important;
+    color: black !important;
+}
 </style>
 """, unsafe_allow_html=True)
 col1, col2 = st.columns([1,5])
