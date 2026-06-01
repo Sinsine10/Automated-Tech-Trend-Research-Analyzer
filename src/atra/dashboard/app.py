@@ -156,6 +156,24 @@ button[data-baseweb="tab"][aria-selected="true"] {
 [data-testid="stMetricValue"] {
     color: var(--mint-green);
 }
+p, div, span, label {
+    color: #000000 !important;
+}
+
+/* Markdown text */
+.stMarkdown {
+    color: #000000 !important;
+}
+
+/* Dataframe text */
+[data-testid="stDataFrame"] {
+    color: #000000 !important;
+}
+
+/* Input labels */
+label {
+    color: #000000 !important;
+}
 </style>
 """, unsafe_allow_html=True)
 col1, col2 = st.columns([1,5])
