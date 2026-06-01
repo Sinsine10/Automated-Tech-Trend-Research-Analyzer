@@ -181,58 +181,32 @@ label {
     border: 1px solid #0B6E4F !important;
 }
 
-/* Selectbox */
-.stSelectbox div[data-baseweb="select"] {
-    background-color: #0B6E4F !important;
-    color: #000000 !important;
-}
-
-/* Dropdown selected value */
-.stSelectbox span {
-    color: #000000 !important;
-}
-
-/* Number inputs */
-.stNumberInput input {
-    background-color: #0B6E4F !important;
-    color: #000000 !important;
-}
-
-/* Slider */
-[data-testid="stSlider"] {
-    background-color: #0B6E4F;
-    padding: 8px;
-    border-radius: 8px;
-}
-
-/* CLOSED SELECT BOX */
-.stSelectbox div[data-baseweb="select"] {
+/* Closed select box */
+div[data-baseweb="select"] > div {
     background-color: #0B6E4F !important;
     border: 2px solid #0B6E4F !important;
-    border-radius: 8px !important;
-}
-
-/* Selected text */
-.stSelectbox span {
     color: black !important;
-    font-weight: 500;
 }
 
-/* OPENED DROPDOWN MENU */
-div[role="listbox"] {
+/* Text inside closed select box */
+div[data-baseweb="select"] span {
+    color: black !important;
+}
+
+/* Open dropdown container */
+ul[role="listbox"] {
     background-color: white !important;
     border: 2px solid #0B6E4F !important;
-    border-radius: 8px !important;
 }
 
-/* Dropdown options */
-div[role="option"] {
+/* Dropdown items */
+li[role="option"] {
     background-color: white !important;
     color: black !important;
 }
 
-/* Hovered option */
-div[role="option"]:hover {
+/* Hovered item */
+li[role="option"]:hover {
     background-color: #EAF5F0 !important;
     color: black !important;
 }
