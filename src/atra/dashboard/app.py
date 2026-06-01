@@ -174,6 +174,41 @@ p, div, span, label {
 label {
     color: #000000 !important;
 }
+/* Text input boxes */
+.stTextInput input {
+    border: 2px solid #0B6E4F !important;
+    color: #0B6E4F !important;
+}
+
+/* Select boxes */
+.stSelectbox div[data-baseweb="select"] {
+    border: 2px solid #0B6E4F !important;
+}
+
+/* Number inputs and sliders */
+.stNumberInput input {
+    border: 2px solid #0B6E4F !important;
+    color: #0B6E4F !important;
+}
+
+/* Focused input */
+input:focus, textarea:focus {
+    border-color: #0B6E4F !important;
+    box-shadow: 0 0 0 1px #0B6E4F !important;
+}
+
+/* Sidebar labels */
+section[data-testid="stSidebar"] label {
+    color: #0B6E4F !important;
+    font-weight: 600;
+}
+
+/* Sidebar headers */
+section[data-testid="stSidebar"] h1,
+section[data-testid="stSidebar"] h2,
+section[data-testid="stSidebar"] h3 {
+    color: #0B6E4F !important;
+}
 </style>
 """, unsafe_allow_html=True)
 col1, col2 = st.columns([1,5])
