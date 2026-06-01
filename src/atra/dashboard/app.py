@@ -116,7 +116,62 @@ def _scheduled_daily_ingest() -> None:
 
 
 st.set_page_config(page_title="ATRA — MInT", layout="wide")
-st.title("ATRA — Tech trend & research intelligence")
+st.markdown("""
+<style>
+:root {
+    --mint-green: #0B6E4F;
+    --mint-dark: #09573E;
+    --mint-light: #EAF5F0;
+}
+
+.stApp {
+    background-color: white;
+}
+
+h1, h2, h3, h4 {
+    color: var(--mint-green);
+}
+
+section[data-testid="stSidebar"] {
+    background-color: var(--mint-light);
+}
+
+.stButton > button {
+    background-color: var(--mint-green);
+    color: white;
+    border-radius: 8px;
+    border: none;
+}
+
+.stButton > button:hover {
+    background-color: var(--mint-dark);
+    color: white;
+}
+
+button[data-baseweb="tab"][aria-selected="true"] {
+    color: var(--mint-green) !important;
+    border-bottom: 3px solid var(--mint-green) !important;
+}
+
+[data-testid="stMetricValue"] {
+    color: var(--mint-green);
+}
+</style>
+""", unsafe_allow_html=True)
+col1, col2 = st.columns([1,5])
+
+with col1:
+    st.image(
+        "https://www.venturemeda.com/assets/Logo_MinT-HOGKexy5.png",
+        width=90
+    )
+
+with col2:
+    st.title("ATRA")
+    st.markdown(
+        "<h4 style='color:#0B6E4F;'>MINT-Automated Tech Trend Research Analyzer</h4>",
+        unsafe_allow_html=True
+    )
 st.caption(
     "Ministry of Innovation and Technology · Daily briefing refreshes from the database every ~2 minutes while this page is open."
 )
