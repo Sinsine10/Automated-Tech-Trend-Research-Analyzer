@@ -15,6 +15,7 @@ from pathlib import Path
 import pandas as pd
 import requests
 import streamlit as st
+import altair as alt
 
 from atra.daily_pipeline import hours_since_last_insert, run_daily
 from atra.db import connect, get_latest_daily_insight, init_db, insert_run, query_papers, upsert_papers
@@ -402,7 +403,10 @@ with tab2:
             pivot = sdf.pivot_table(
                 index="date", columns="sector", values="count", aggfunc="sum"
             ).fillna(0)
-            st.subheader("Activity by sector (daily)")
+            st.markdown(
+                "<h3 style='color:black;'>Activity by sector (daily)</h3>",
+                unsafe_allow_html=True,
+            )
             st.line_chart(pivot)
         except Exception:
             st.dataframe(sdf, width="stretch", hide_index=True)
@@ -411,8 +415,22 @@ with tab2:
 
     kw = top_tokens(db_path(), top_n=25)
     if kw:
-        st.subheader("Top keywords (recent papers)")
-        st.bar_chart(pd.DataFrame(kw).set_index("token"))
+        st.markdown(
+            "<h3 style='color:black;'>Top keywords (recent papers)</h3>",
+            unsafe_allow_html=True,
+        )
+        kw_df = pd.DataFrame(kw)
+        value_col = [c for c in kw_df.columns if c != "token"][0]
+        chart = (
+            alt.Chart(kw_df)
+            .mark_bar(color="#0B6E4F")
+            .encode(
+                x=alt.X(f"{value_col}:Q", title="Frequency"),
+                y=alt.Y("token:N", sort="-x", title="Keyword"),
+            )
+        )
+        st.altair_chart(chart, use_container_width=True)
+        
 
 with tab3:
     sigs = early_signals(db_path(), recent_days=14)
