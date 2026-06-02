@@ -210,6 +210,36 @@ li[role="option"]:hover {
     background-color: #EAF5F0 !important;
     color: black !important;
 }
+/* Dataframe text */
+[data-testid="stDataFrame"] {
+    color: #000000 !important;
+    font-weight: 500 !important;
+}
+
+/* Table cells */
+[data-testid="stDataFrame"] div {
+    color: #000000 !important;
+}
+
+/* Table headers */
+[data-testid="stDataFrame"] th {
+    color: #000000 !important;
+    font-weight: 700 !important;
+}
+
+/* Markdown inside tables */
+table {
+    color: #000000 !important;
+}
+
+td {
+    color: #000000 !important;
+}
+
+th {
+    color: #000000 !important;
+}
+
 </style>
 """, unsafe_allow_html=True)
 col1, col2 = st.columns([1,5])
