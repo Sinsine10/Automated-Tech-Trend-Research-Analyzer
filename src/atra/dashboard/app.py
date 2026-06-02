@@ -354,7 +354,7 @@ with tab0:
         em = briefing.get("emerging_keywords") or []
         if em:
             st.markdown("### Emerging keywords (vs prior week)")
-
+    
             em_df = pd.DataFrame(em)
 
             chart = (
@@ -364,9 +364,8 @@ with tab0:
                     x=alt.X("token:N", title="Keyword"),
                     y=alt.Y("lift:Q", title="Lift"),
                 )
-           )
-
-           st.altair_chart(chart, use_container_width=True)
+            )
+            st.altair_chart(chart, use_container_width=True)
 
         pb = briefing.get("priority_brief") or []
         if pb:
