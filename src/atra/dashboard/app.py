@@ -361,9 +361,16 @@ with tab0:
                 alt.Chart(em_df)
                 .mark_bar(color="#0B6E4F")
                 .encode(
-                    x=alt.X("token:N", title="Keyword"),
-                    y=alt.Y("lift:Q", title="Lift"),
+                    x=alt.X(
+                        "token:N",
+                        axis=alt.Axis(labelColor="black", titleColor="black")
+                    ),
+                    y=alt.Y(
+                        "lift:Q", 
+                        axis=alt.Axis(labelColor="black", titleColor="black")
+                    ),
                 )
+                .configure_view(stroke=None)
             )
             st.altair_chart(chart, use_container_width=True)
 
@@ -437,7 +444,7 @@ with tab2:
             .mark_bar(color="#0B6E4F")
             .encode(
                 x=alt.X(f"{value_col}:Q", title="Frequency"),
-                y=alt.Y("token:N", sort="-x", title="Keyword"),
+                y=alt.Y("token:N", title="Keyword"),
             )
         )
         st.altair_chart(chart, use_container_width=True)
